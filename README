@@ -3,3 +3,5 @@ A pair of modules that configure lvs and apache to provide a VIP and a web farm 
 Optionally, the pe_apacheha::nfs class will hack content replication by exporting appropriate bits of config via NFS (this is a hack note and the class just isn't very good at this point - it's not [environment] aware either (though it does work with a vanilla PE install).  Good things I like about the nfs approach is that cert replication works, and you get to push out CRLs to the FE webservers.
 
 Note:  this doesn't cover installing PE Puppet masters or agents anywhere - do that yourself.
+
+Note: hack alert - the lvs boxen don't like talking to the VIP that's locally configured, so there's a bit of a hack to create a host entry and we just hope the thing stays up...  The checkip script could do something useful here (i.e. if a backend host is up make sure the host in the hosts file is the right one)
