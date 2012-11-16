@@ -1,0 +1,62 @@
+SSLProxyEngine on
+LoadModule proxy_http_module modules/mod_proxy_http.so
+<% if @config['certserver'] -%>
+<Proxy balancer://puppetmasterca>
+BalancerMember https://ca<%= @config['certserver'] %>:8140
+<% if @config['certserverstandby'] -%>
+BalancerMember https://ca<%= @config['certserverstandby'] %>:8140 status=+H
+<% end -%>
+</Proxy>
+<% end -%>
+<Proxy balancer://puppetmaster>
+<%  @puppetmasters.each do |puppetmaster| -%>
+BalancerMember https://<%= puppetmaster %>:8140
+<% end -%>
+</Proxy>
+Listen 8140
+<VirtualHost *:8140>
+SSLEngine on
+# SSLCipherSuite SSLv2:-LOW:-EXPORT:RC4+RSA
+SSLProtocol -ALL +SSLv3 +TLSv1
+SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP
+# Puppet master should generate initial CA certificate.
+# ensure certs are located in /var/lib/puppet/ssl
+SSLCertificateFile <%= scope.lookupvar('apache::params::httpd_dir') %>/ssl/puppet_public_key.pem
+SSLCertificateKeyFile <%= scope.lookupvar('apache::params::httpd_dir') %>/ssl/private_keys/puppet_private_key.pem
+SSLCertificateChainFile <%= scope.lookupvar('apache::params::httpd_dir') %>/ssl/ca_key.pem
+SSLCACertificateFile <%= scope.lookupvar('apache::params::httpd_dir') %>/ssl/ca/ca_crt.pem
+# CRL checking should be enabled
+# disable next line if Apache complains about CRL
+SSLCARevocationFile <%= scope.lookupvar('apache::params::httpd_dir') %>/ssl/ca/ca_crl.pem
+# optional to allow CSR request, required if certificates distributed to client during provisioning.
+SSLVerifyClient optional
+SSLVerifyDepth 1
+SSLOptions +StdEnvVars
+# The following client headers record authentication information for down stream workers.
+RequestHeader set X-SSL-Subject %{SSL_CLIENT_S_DN}e 
+RequestHeader set X-Client-DN %{SSL_CLIENT_S_DN}e 
+RequestHeader set X-Client-Verify %{SSL_CLIENT_VERIFY}e
+<Location />
+  SetHandler balancer-manager
+  Order allow,deny
+  Allow from all
+</Location>
+
+ProxyPass /balancer-manager !
+
+ProxyPassMatch ^(/.*?)/(certificate.*?)/(.*)$ balancer://puppetmasterca
+
+ProxyPassReverse ^(/.*?)/(certificate.*?)/(.*)$ balancer://puppetmasterca
+
+ProxyPass / balancer://puppetmaster/
+
+ProxyPassReverse / balancer://puppetmaster/
+
+
+
+ProxyPreserveHost On
+
+ErrorLog /var/log/httpd/balancer_error.log
+CustomLog /var/log/httpd/balancer_access.log combined
+CustomLog /var/log/httpd/balancer_ssl_requests.log "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x\"%r\" %b"
+</VirtualHost>

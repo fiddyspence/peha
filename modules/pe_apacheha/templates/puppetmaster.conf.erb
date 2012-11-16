@@ -1,0 +1,36 @@
+Listen 8140
+<VirtualHost *:8140>
+    SSLEngine on
+    SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP
+    SSLCertificateFile      /etc/puppetlabs/puppet/ssl/certs/<%= @pe_apacheha_certname -%>.pem
+    SSLCertificateKeyFile   /etc/puppetlabs/puppet/ssl/private_keys/<%=  @pe_apacheha_certname -%>.pem
+    SSLCertificateChainFile /etc/puppetlabs/puppet/ssl/certs/ca.pem
+    SSLCACertificateFile    /etc/puppetlabs/puppet/ssl/certs/ca.pem
+
+    SSLCARevocationFile     /etc/puppetlabs/puppet/ssl/ca/ca_crl.pem
+
+#  These variables set by the calling front end Apache load balancer
+    SetEnvIf X-Client-Verify "(.*)" SSL_CLIENT_VERIFY=$1
+    SetEnvIf X-SSL-Client-DN "(.*)" SSL_CLIENT_S_DN=$1
+    SetEnvIf X-SSL-Subject "(.*)" SSL_CLIENT_S_DN=$1
+
+#  These unset because we're doing it at the front end
+#    SSLVerifyClient optional
+#    SSLVerifyDepth  1
+#    SSLOptions +StdEnvVars
+
+#    RequestHeader set X-SSL-Subject %{SSL_CLIENT_S_DN}e
+#    RequestHeader set X-Client-DN %{SSL_CLIENT_S_DN}e
+#   RequestHeader set X-Client-Verify %{SSL_CLIENT_VERIFY}e
+
+    RackAutoDetect On
+    DocumentRoot /var/opt/lib/pe-puppetmaster/public/
+    <Directory /var/opt/lib/pe-puppetmaster/>
+        Options None
+        AllowOverride None
+        Order allow,deny
+<% @pe_apacheca_allowfrom.each do |loadbalancer| -%>
+        allow from <%= loadbalancer %>
+<% end -%>
+    </Directory>
+</VirtualHost>

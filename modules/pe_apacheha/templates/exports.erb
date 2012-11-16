@@ -1,0 +1,7 @@
+<% @modulepath.split(':').each do |thispath| -%>
+<%= thispath %> <% @puppetmasters.each do |server| -%> <% if server != @fqdn -%><%= server -%>(ro)<% end -%>  <%end %>
+<% end -%>
+<%= @manifestdir %> <% @puppetmasters.each do |server| -%> <% if server != @fqdn -%><%= server -%>(ro)<% end -%> <%end %>
+/etc/puppetlabs/hieradata <% @puppetmasters.each do |server| -%> <% if server != @fqdn -%><%= server -%>(ro)<% end -%> <%end %>
+/etc/puppetlabs/puppet/ssl <% @puppetmasters.each do |server| -%> <% if server != @fqdn -%><%= server -%>(insecure,all_squash,rw,anonuid=496,anongid=495)<% end -%> <%end %>
+

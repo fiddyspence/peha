@@ -1,0 +1,4 @@
+#!/bin/bash
+
+OUTPUT=$(curl --insecure -H 'Accept: s' -s https://$1:8140/production/certificate/ca)
+echo $OUTPUT | cut -b 1-10

@@ -1,0 +1,36 @@
+serial_no = <%= @confighash['serial'] || Time.now.to_i %>
+primary = <%= @confighash['primary'][1] %>
+service = lvs
+backup_active = <% if @confighash['backup'][1] %>1<% else %>0<% end %>
+backup = <%= confighash['backup'][1] %>
+heartbeat = 1
+heartbeat_port = <%= @confighash['port'] || 539 %>
+keepalive = <%= @confighash['keepalive'] || 6 %>
+deadtime = 18
+network = direct
+debug_level = NONE
+monitor_links = 0
+syncdaemon = 0
+virtual puppetha {
+     active = 1
+     address = <%= @confighash['vip'] %> eth0:1
+     vip_nmask = 255.255.255.255
+     port = 8140
+     expect = "-----BEGIN"
+     use_regex = 0
+     send_program = "/usr/local/bin/lvscheck %h"
+     load_monitor = none
+     scheduler = wlc
+     protocol = tcp
+     timeout = 6
+     reentry = 15
+     quiesce_server = 1
+<% @confighash['servers'].each do |server| -%>
+     server <%= server[0] %> {
+         address = <%= server[1] %>
+         active = 1
+         port = 8140
+         weight = 1
+     }
+<% end -%>
+}
