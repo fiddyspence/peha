@@ -1,16 +1,16 @@
 pe_lvs
 
-This is the pe_lvs module.
+This is a module to install and configure pulse/piranha on an EL.
 
 License
 -------
-
+Apache
 
 Contact
 -------
-
+https://github.com/fiddyspence
 
 Support
 -------
 
-Please log tickets and issues at our [Projects site](http://projects.example.com)
+Please log tickets and issues at https://github.com/fiddyspence/peha
