@@ -43,15 +43,18 @@ class pe_lvs ($confighash) {
   }
 
   package { ['piranha','ipvsadm']:
-    ensure => present,
+    ensure  => present,
   }
+
   sysctl { 'net.ipv4.ip_forward':
     value     => 1,
     permanent => 'yes',
   }
+
   service { 'pulse':
     ensure => running,
     enable => true,
+    require => [ Package['piranha'],Package['ipvsadm']],
   }
 
   file { '/etc/sysconfig/ha/lvs.cf':
