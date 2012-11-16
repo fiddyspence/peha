@@ -5,3 +5,5 @@ Optionally, the pe_apacheha::nfs class will hack content replication by exportin
 Note:  this doesn't cover installing PE Puppet masters or agents anywhere - do that yourself.
 
 Note: hack alert - the lvs boxen don't like talking to the VIP that's locally configured, so there's a bit of a hack to create a host entry and we just hope the thing stays up...  The checkip script could do something useful here (i.e. if a backend host is up make sure the host in the hosts file is the right one)
+
+Also note that the balancers spoof DNS to make the CA second node hot standby - sharing via NFS doesn't really make this necessary - just make sure you can resolve "ca{$::fqdn}" at the front ends - this could also be hacked using host resource entries, hack hack hack
